@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import "../styles/TaskList.css";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 
@@ -22,7 +21,7 @@ const TaskList: React.FC = () => {
     useEffect(() => {
         const fetchTasks = async () => {
             try {
-                const response = await axios.get("/api");
+                const response = await api.get("/");
                 setTasks(response.data);
             } catch (error) {
                console.error("Erro ao buscar tarefa:", error);
@@ -40,35 +39,25 @@ const TaskList: React.FC = () => {
             return;
         }
 
+        const isDuplicate = tasks.some((task) => task.nome === nome);
+        if (isDuplicate) {
+        setError("Já existe uma tarefa com esse nome.");
+        return;
+    }
+
         try {
-            const response = await fetch("/api/task", {
-             method: "POST",
-             headers: {
-                "Content-Type": "application/json",
-             },
-             body: JSON.stringify({
+            const response = await api.post("/task", {
                 nome,
-                custo: Number(custo),
+                custo: parseFloat(custo),
                 dataLimite,
-             }),
-            });
+              });
 
-            if (!response.ok) {
-
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Erro ao adicionar tarefa.");
-            }
-
-                const addedTask = await response.json();
-                setTasks((prevTasks) => [...prevTasks, addedTask])
+                setTasks((prevTasks) => [...prevTasks, response.data])
                 setNewTask({ nome: "", custo: "", dataLimite: "" });
                 setError("");
             } catch (error) {
-                if (error instanceof Error) {
-                    setError(error.message);
-                } else {
-                    setError("Erro ao adicionar tarefa.");
-                }
+                    console.error("Erro ao adicionar tarefa:", error);
+                    setError("Erro ao adicionar tarefa. Por favor, tente novamente.");
         }
     }
     
@@ -99,7 +88,7 @@ const TaskList: React.FC = () => {
                 return;
             }
 
-            const response = await axios.put(`/api/task/${id}`, editingValues);
+            const response = await api.put(`/task/${id}`, editingValues);
 
             setTasks((prevTasks) => 
             prevTasks.map((task) => 
@@ -119,7 +108,7 @@ const TaskList: React.FC = () => {
         const confirmDelete = window.confirm("Tem certeza que deseja excluir esta tarefa?");
         if (confirmDelete) {
             try {
-                await api.delete(`/api/task/${id}`);
+                await api.delete(`/task/${id}`);
                 setTasks(tasks.filter((task) => task.id !== id));  
                 alert("Tarefa excluída com sucesso!");
               } catch (error) {
@@ -131,7 +120,7 @@ const TaskList: React.FC = () => {
 
         return (
             <div className="task-list-container">
-                <h1 className="task-list-title">TODO</h1>
+                <h1 className="task-list-title">TAREFAÇO</h1>
                 <table className="task-list-table">
                     <thead>
                         <tr>
@@ -239,7 +228,10 @@ const TaskList: React.FC = () => {
                     value={newTask.dataLimite}
                     onChange={(e) => setNewTask({ ...newTask, dataLimite: e.target.value })}
                     />
-                    <button onClick={handleAddTask}>
+                    <button 
+                    onClick={handleAddTask}
+                    disabled={!newTask.nome || !newTask.custo || !newTask.dataLimite}
+                    >
                         <FontAwesomeIcon icon={faPlus} />
                     </button>
                 </div>

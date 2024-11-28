@@ -96,11 +96,6 @@ router.put("/task/:id", async (req: Request, res: Response) => {
 
 router.delete("/task/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { confirm } = req.body;
-
-    if (!confirm) {
-        return res.status(400).json({ error: "Confirmação necessária" });
-    }
 
     try {
         const task = await prisma.task.findUnique({
