@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import "../styles/TaskList.css";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DropResult } from "react-beautiful-dnd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,11 +11,14 @@ type Task = {
   nome: string;
   custo: number;
   dataLimite: string;
+  ordem: number;
 };
 
 const TaskList: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTask, setNewTask] = useState({ nome: "", custo: "", dataLimite: "" });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState<number | null>(null);
     const [error, setError] = useState("");
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [editingValues, setEditingValues] = useState<Partial<Task>>({}); 
@@ -22,7 +27,8 @@ const TaskList: React.FC = () => {
         const fetchTasks = async () => {
             try {
                 const response = await api.get("/");
-                setTasks(response.data);
+                const sortedTasks = response.data.sort((a: Task, b: Task) => a.ordem - b.ordem);
+                setTasks(sortedTasks);
             } catch (error) {
                console.error("Erro ao buscar tarefa:", error);
             }
@@ -30,6 +36,19 @@ const TaskList: React.FC = () => {
 
         fetchTasks();
     }, []);
+
+        const handleOnDragEnd = (result: DropResult) => {
+            if (!result.destination) return;
+        
+            const reorderedTasks = Array.from(tasks);
+            const [movedTask] = reorderedTasks.splice(result.source.index, 1);
+            reorderedTasks.splice(result.destination.index, 0, movedTask);
+
+         setTasks(reorderedTasks);
+        }
+
+
+    
 
     const handleAddTask = async () => {
         const { nome, custo, dataLimite } = newTask;
@@ -104,38 +123,61 @@ const TaskList: React.FC = () => {
     };
 
 
-    const handleDelete = async (id: number) => {
-        const confirmDelete = window.confirm("Tem certeza que deseja excluir esta tarefa?");
-        if (confirmDelete) {
+    const handleDelete = async () => {
+        if (!taskToDelete) return;
+
             try {
-                await api.delete(`/task/${id}`);
-                setTasks(tasks.filter((task) => task.id !== id));  
+                await api.delete(`/task/${taskToDelete}`);
+                setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskToDelete));  
+                setShowDeleteModal(false);
+                setTaskToDelete(null);
                 alert("Tarefa excluída com sucesso!");
               } catch (error) {
                  console.error("Erro ao excluir tarefa:", error) 
                  alert("Erro ao excluir tarefa. Por favor, tente novamente.");
               }
-          }
+        };
+
+        const confirmDelete = (id: number ) => {
+            setTaskToDelete(id);
+            setShowDeleteModal(true);
+        };
+
+        const cancelDelete = () => {
+            setShowDeleteModal(false);
+            setTaskToDelete(null);
         };
 
         return (
             <div className="task-list-container">
                 <h1 className="task-list-title">TAREFAÇO</h1>
-                <table className="task-list-table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Custo</th>
-                            <th>Data Limite</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                <tbody>
-                    {tasks.map((task) => (
-                        <tr 
-                        key={task.id}
-                        className={task.custo >= 1000 ? "task-high-cost" : ""}
-                        >
+                <DragDropContext onDragEnd={handleOnDragEnd}>
+                    <Droppable droppableId="tasks">
+                        {(provided) => (
+                             <table 
+                             className="task-list-table">
+                                 <thead>
+                                     <tr>
+                                         <th>Nome</th>
+                                         <th>Custo</th>
+                                         <th>Data Limite</th>
+                                         <th>Ações</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+
+                                 >
+                         {tasks.map((task, index) => (
+                            <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                                 {(provided) => (
+                                    <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className={task.custo >= 1000 ? "task-high-cost" : ""}
+                                    > 
                          {editingTaskId === task.id ? (
                             <>
                             <td>
@@ -198,7 +240,7 @@ const TaskList: React.FC = () => {
                             </button>
                             <button
                             className="task-button task-delete-button"
-                            onClick={() => handleDelete(task.id)}
+                            onClick={() => confirmDelete(task.id)}
                             >
                             <FontAwesomeIcon icon={faTrash} />
                             </button>
@@ -206,9 +248,31 @@ const TaskList: React.FC = () => {
                         </>
                     )}
                     </tr>
+                )}
+                </Draggable>
                 ))}
+                {provided.placeholder}
                 </tbody>
                 </table>
+                )}
+                </Droppable>
+                </DragDropContext>
+                {showDeleteModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content">
+                            <h2>Confirmar Exclusão</h2>
+                            <p>Tem certeza que deseja excluir esta tarefa?</p>
+                            <div className="modal-buttons">
+                              <button className="confirm-button" onClick={handleDelete}>
+                                Sim
+                              </button>
+                              <button className="cancel-button" onClick={cancelDelete}>
+                                Não
+                              </button>
+                        </div>
+                    </div>
+                    </div>
+                )}
                 <div className="add-task">
                     <input
                     type="text"
@@ -237,7 +301,7 @@ const TaskList: React.FC = () => {
                 </div>
                 {error && <p className="error-message">{error}</p>}
             </div>
-        )
-}
+        );
+};
 
 export default TaskList;

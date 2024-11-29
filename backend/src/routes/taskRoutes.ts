@@ -94,6 +94,30 @@ router.put("/task/:id", async (req: Request, res: Response) => {
     }
 });
 
+router.put("/task/order", async (req: Request, res: Response) => {
+    const { tasks } = req.body;
+
+    if(!Array.isArray(tasks) || tasks.some(task => !task.id || task.ordem === undefined)) {
+        return res.status(400).json({ error: "Formato de tarefas inválido" });
+    }
+
+    try {
+        await prisma.$transaction(
+            tasks.map(task =>
+                prisma.task.update({
+                    where: { id: task.id },
+                    data: { ordem: task.ordem },
+                })
+            )
+        )
+
+            res.json({ message: "Ordem das tarefas atualizada com sucesso." })
+        } catch (error) {
+        console.error("Erro ao atualizar ordem das tarefas:", error);
+        res.status(500).json({ error: "Erro ao atualizar ordem das tarefas" });
+    }
+});
+
 router.delete("/task/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
 
