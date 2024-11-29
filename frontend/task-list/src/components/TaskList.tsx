@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { DropResult } from "react-beautiful-dnd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import logo from "../assets/logo-tarefaco.png"
 
 type Task = {
   id: number;
@@ -162,7 +163,7 @@ const TaskList: React.FC = () => {
         return (
             <div className="task-list-container">
                 <div className="task-list-header">
-                <img src="src/assets/logo-tarefaco.png" alt="logo"/>
+                <img src={logo} alt="logo"/>
                 <h1 className="task-list-title"><span>TARE</span>FAÇO</h1>
                 </div>
                 
