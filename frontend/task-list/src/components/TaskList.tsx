@@ -37,7 +37,7 @@ const TaskList: React.FC = () => {
         fetchTasks();
     }, []);
 
-        const handleOnDragEnd = (result: DropResult) => {
+        const handleOnDragEnd = async (result: DropResult) => {
             if (!result.destination) return;
         
             const reorderedTasks = Array.from(tasks);
@@ -45,6 +45,17 @@ const TaskList: React.FC = () => {
             reorderedTasks.splice(result.destination.index, 0, movedTask);
 
          setTasks(reorderedTasks);
+
+         const updateTasks = reorderedTasks.map((task, index) => ({
+            ...task,
+            ordem: index,
+         }));
+
+         try {
+            await api.put("/task/order", { tasks: updateTasks })
+         } catch (error) {
+            console.error("Erro ao atualizar ordem das tarefas:", error);
+         }
         }
 
 
@@ -150,7 +161,11 @@ const TaskList: React.FC = () => {
 
         return (
             <div className="task-list-container">
-                <h1 className="task-list-title">TAREFAÇO</h1>
+                <div className="task-list-header">
+                <img src="src/assets/logo-tarefaco.png" alt="logo"/>
+                <h1 className="task-list-title"><span>TARE</span>FAÇO</h1>
+                </div>
+                
                 <DragDropContext onDragEnd={handleOnDragEnd}>
                     <Droppable droppableId="tasks">
                         {(provided) => (
@@ -293,6 +308,7 @@ const TaskList: React.FC = () => {
                     onChange={(e) => setNewTask({ ...newTask, dataLimite: e.target.value })}
                     />
                     <button 
+                    className="add-task-button"
                     onClick={handleAddTask}
                     disabled={!newTask.nome || !newTask.custo || !newTask.dataLimite}
                     >

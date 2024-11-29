@@ -1,13 +1,25 @@
 body {
+    max-width: 100%;
     margin: 0;
     display: block;
 }
 
+.task-list-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.task-list-title span {
+    color: #ef4ad4;
+}
+
 .task-list-title {
-    background-color: #6c63ff;
     font-size: 2em;
     margin-bottom: 20px;
     text-align: center;
+    color: #9359F3;
 }
 
 .task-list-table {
@@ -45,7 +57,7 @@ body {
 }
 
 .task-delete-button {
-    background-color: #CDCDCD;
+    background-color: #E0DCE4;
 }
 
 .modal-overlay {
@@ -87,7 +99,7 @@ body {
 
 .cancel-button {
     background-color: #ddd;
-    color: #333;
+    color: #333030;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
@@ -102,7 +114,7 @@ body {
 }
 
 .add-task {
-    background-color: #6c63ff;
+    background-color: #E0DCE4;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -113,7 +125,10 @@ body {
     padding: 5px;
     font-size: 14px;
 }
-  
+
+.add-task-button {
+    background-color: #9359F3;
+}
 
 .task-list-table input {
     width: 100%;
@@ -123,12 +138,12 @@ body {
 }
 
 .task-save-button {
-    background-color: #6c63ff;
+    background-color: #9359F3;
     color: white;
 }
 
 .task-cancel-button {
-    background-color: #6c757d;
+    background-color: #E0DCE4;
     color: white;
 }
 
