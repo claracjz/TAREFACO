@@ -216,7 +216,7 @@ const TaskList: React.FC = () => {
                             </td>
                             <td>
                                 <input 
-                                type="date" 
+                                type="datetime-local" 
                                 value={
                                     editingValues.dataLimite
                                     ? editingValues.dataLimite.split("T")[0]
@@ -303,7 +303,7 @@ const TaskList: React.FC = () => {
                     onChange={(e) => setNewTask({ ...newTask, custo: e.target.value })}
                     />
                     <input
-                    type="date"
+                    type="datetime-local"
                     placeholder="Data Limite"
                     value={newTask.dataLimite}
                     onChange={(e) => setNewTask({ ...newTask, dataLimite: e.target.value })}
