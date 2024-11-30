@@ -24,5 +24,5 @@ O projeto está publicado em: https://tarefaco.vercel.app/
 
 # 👯 Conecte-se comigo:
 
- [Linkedin](www.linkedin.com/in/ana-vitoria-dev)
+ [Linkedin](https://www.linkedin.com/in/ana-vit%C3%B3ria-dev/)
 
